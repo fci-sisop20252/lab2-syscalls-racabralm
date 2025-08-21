@@ -19,13 +19,13 @@ strace -e write ./ex1b_write
 **2. Por que há diferença entre os dois métodos? Consulte o docs/printf_vs_write.md**
 
 ```
-[Sua análise aqui]
+Há diferença pois a contagem é diferente nos dois métodos. O 'write' conta bytes, enquanto o 'printf' conta caracteres. 
 ```
 
 **3. Qual método é mais previsível? Por quê você acha isso?**
 
 ```
-[Sua análise aqui]
+O 'write' é mais previsível, pois é uma syscall de baixo nível que apenas escreve um bloco de bytes. O 'printf' interpreta strings, converte valores e lida com o buffer da biblioteca. 
 ```
 
 ---
