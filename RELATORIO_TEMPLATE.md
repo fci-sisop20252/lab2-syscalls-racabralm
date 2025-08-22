@@ -33,8 +33,8 @@ O 'write' é mais previsível, pois é uma syscall de baixo nível que apenas es
 ## 2️⃣ Exercício 2 - Leitura de Arquivo
 
 ### 📊 Resultados da execução:
-- File descriptor: _____
-- Bytes lidos: _____
+- File descriptor: 3
+- Bytes lidos: 127
 
 ### 🔧 Comando strace:
 ```bash
@@ -46,19 +46,19 @@ strace -e openat,read,close ./ex2_leitura
 **1. Qual file descriptor foi usado? Por que não começou em 0, 1 ou 2?**
 
 ```
-[Sua análise aqui]
+Foi usado o 3. Não começou em 0, 1 ou 2 porque esses três file descriptors são, por padrão, reservados para a entrada padrão (0), a saída padrão (1) e a saída de erro padrão (2). O sistema operacional aloca o próximo número inteiro disponível para o arquivo que foi aberto.
 ```
 
 **2. Como você sabe que o arquivo foi lido completamente?**
 
 ```
-[Sua análise aqui]
+A chamada read() retornou 127, que é o número exato de bytes que o programa tentou ler (BUFFER_SIZE - 1). Isso indica que todo o conteúdo do arquivo se encaixou no buffer fornecido, sem que tivesse mais dados para ler. A impressão do conteúdo do arquivo também confirma que a leitura foi completa.
 ```
 
 **3. Por que verificar retorno de cada syscall?**
 
 ```
-[Sua análise aqui]
+Porque elas podem falhar. Erros como a não existência de um arquivo (open), problemas de hardware ou permissão (read), ou falhas ao liberar recursos (close) podem acontecer.
 ```
 
 ---
@@ -66,55 +66,54 @@ strace -e openat,read,close ./ex2_leitura
 ## 3️⃣ Exercício 3 - Contador com Loop
 
 ### 📋 Resultados (BUFFER_SIZE = 64):
-- Linhas: _____ (esperado: 25)
-- Caracteres: _____
-- Chamadas read(): _____
-- Tempo: _____ segundos
+- Linhas: 25 (esperado: 25)
+- Caracteres: 1300
+- Chamadas read(): 21
+- Tempo: 0.000154 segundos
 
 ### 🧪 Experimentos com buffer:
 
 | Buffer Size | Chamadas read() | Tempo (s) |
 |-------------|-----------------|-----------|
-| 16          |                 |           |
-| 64          |                 |           |
-| 256         |                 |           |
-| 1024        |                 |           |
+| 16          |       82        |  0.000203 |
+| 64          |       21        |  0.000154 |
+| 256         |        6        |  0.000091 |
+| 1024        |        2        |  0.000177 |
 
 ### 🔍 Análise
 
 **1. Como o tamanho do buffer afeta o número de syscalls?**
 
 ```
-[Sua análise aqui]
+O tamanho do buffer e o número de syscalls read() têm uma relação inversa. À medida que o tamanho do buffer aumenta, cada chamada read() pode transferir mais dados, reduzindo o número total de chamadas necessárias para ler o arquivo inteiro. Isso minimiza o custo de comutação entre o modo de usuário e o modo de kernel.
 ```
 
 **2. Todas as chamadas read() retornaram BUFFER_SIZE bytes? Discorra brevemente sobre**
 
 ```
-[Sua análise aqui]
+Não, a última chamada read() do loop de leitura retornou um número de bytes menor que BUFFER_SIZE. Isso ocorre porque, ao se aproximar do final do arquivo, o número de bytes restantes é, na maioria dos casos, menor do que o tamanho do buffer. O valor de retorno de read() mostra quantos bytes foram de fato lidos, e quando esse valor é zero, o loop termina.
 ```
 
 **3. Qual é a relação entre syscalls e performance?**
 
 ```
-[Sua análise aqui]
-```
+Existe uma relação inversa entre o número de syscalls e a performance. Um maior número de chamadas de sistema aumenta o "overhead" de execução, pois o sistema precisa alternar repetidamente entre o modo de usuário e o modo de kernel para cada operação. Ao diminuir o número de syscalls, o programa se torna mais eficiente e rápido.
 
 ---
 
 ## 4️⃣ Exercício 4 - Cópia de Arquivo
 
 ### 📈 Resultados:
-- Bytes copiados: _____
-- Operações: _____
-- Tempo: _____ segundos
-- Throughput: _____ KB/s
+- Bytes copiados: 1364
+- Operações: 6
+- Tempo: 0.000263 segundos
+- Throughput: 5064.76 KB/s
 
 ### ✅ Verificação:
 ```bash
 diff dados/origem.txt dados/destino.txt
 ```
-Resultado: [ ] Idênticos [ ] Diferentes
+Resultado: [X] Idênticos [ ] Diferentes
 
 ### 🔍 Análise
 
