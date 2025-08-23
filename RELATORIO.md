@@ -120,31 +120,34 @@ Resultado: [X] Idênticos [ ] Diferentes
 **1. Por que devemos verificar que bytes_escritos == bytes_lidos?**
 
 ```
-[Sua análise aqui]
+Para garantir que a cópia do arquivo seja completa e não tenha falhas. A função write() pode não escrever todos os bytes solicitados devido a erros como falta de espaço em disco, o que levaria a uma cópia incompleta/corrompida.
 ```
 
 **2. Que flags são essenciais no open() do destino?**
 
 ```
-[Sua análise aqui]
+As flags essenciais para a chamada open() do arquivo de destino são: 
+O_WRONLY: permite que o arquivo seja aberto para escrita; 
+O_CREAT: cria o arquivo se ele não existir;
+O_TRUNC: garante que o arquivo de destino seja apagado antes de começar a escrita, evitando que dados de cópias anteriores permaneçam.
 ```
 
 **3. O número de reads e writes é igual? Por quê?**
 
 ```
-[Sua análise aqui]
+Sim, o número de chamadas read() e write() é igual. A lógica do loop de cópia é projetada para que a cada bloco de dados lido de um arquivo, esse mesmo bloco seja imediatamente escrito no outro. Então, cada chamada read() corresponde a uma write().
 ```
 
 **4. Como você saberia se o disco ficou cheio?**
 
 ```
-[Sua análise aqui]
+Verificando o valor de retorno da write(). Se o disco estiver cheio, write() retornará um valor menor que a quantidade de bytes que tentamos escrever. A variável global errno seria definida com o código de erro ENOSPC, que indica "no space left on device".
 ```
 
 **5. O que acontece se esquecer de fechar os arquivos?**
 
 ```
-[Sua análise aqui]
+Causa um vazamento de file descriptors. O sistema operacional continua a manter o arquivo aberto, consumindo recursos do sistema. O fechamento garante que os dados em cache no kernel sejam gravados no disco (importante para a integridade dos dados). 
 ```
 
 ---
@@ -156,19 +159,19 @@ Resultado: [X] Idênticos [ ] Diferentes
 **1. Como as syscalls demonstram a transição usuário → kernel?**
 
 ```
-[Sua análise aqui]
+As syscalls demonstram a transição pois atuam como a única interface entre os programas de usuário e os recursos do sistema operacional. Quando uma syscall é invocada, o sistema salva o estado do programa de usuário, eleva o nível de privilégio da CPU para o modo de kernel, executa a operação solicitada, restaura o estado e retorna ao modo de usuário.
 ```
 
 **2. Qual é o seu entendimento sobre a importância dos file descriptors?**
 
 ```
-[Sua análise aqui]
+A importância dos file descriptors se deve a sua capacidade de abstrair e unificar o acesso a diferentes tipos de recursos (permite que programas usem as mesmas syscalls para interagir com todos esses recursos).
 ```
 
 **3. Discorra sobre a relação entre o tamanho do buffer e performance:**
 
 ```
-[Sua análise aqui]
+Aumentar o tamanho do buffer geralmente melhora a performance de operações de I/O. O buffer maior permite que mais dados sejam lidos ou escritos por syscalls, reduzindo o número total de chamadas. Como cada syscall tem um custo de comutação entre o modo de usuário e o modo de kernel, menos syscalls resultam em menos overhead e em um tempo de execução mais rápido.
 ```
 
 ### ⚡ Comparação de Performance
@@ -179,21 +182,21 @@ time ./ex4_copia
 time cp dados/origem.txt dados/destino_cp.txt
 ```
 
-**Qual foi mais rápido?** _____
+**Qual foi mais rápido?** ./ex4_copia
 
 **Por que você acha que foi mais rápido?**
 
 ```
-[Sua análise aqui]
+Apesar do cp ter um overhead de inicialização maior para carregar bibliotecas e funcionalidades extras, o meu programa faz apenas o necessário, tornando ele mais rápido para este caso específico.
 ```
 
 ---
 
 ## 📤 Entrega
 Certifique-se de ter:
-- [ ] Todos os códigos com TODOs completados
-- [ ] Traces salvos em `traces/`
-- [ ] Este relatório preenchido como `RELATORIO.md`
+- [X] Todos os códigos com TODOs completados
+- [X] Traces salvos em `traces/`
+- [X] Este relatório preenchido como `RELATORIO.md`
 
 ```bash
 strace -e write -o traces/ex1a_trace.txt ./ex1a_printf
